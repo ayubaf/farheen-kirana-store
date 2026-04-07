@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>फरहीन किराणा & जनरल स्टोअर, घारोळा</title>
+    <style>
+        :root { --whatsapp: #25D366; --primary: #075E54; --bg: #ece5dd; --white: #ffffff; --blue: #34B7F1; --red: #e74c3c; }
+        body { font-family: -apple-system, sans-serif; margin: 0; background: var(--bg); color: #333; }
+        
+        header { background: var(--primary); color: white; padding: 20px 15px; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        header h3 { margin: 0; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 1px; }
+        .sub-head { font-size: 0.8rem; opacity: 0.9; margin-top: 4px; }
+
+        .container { padding: 15px; max-width: 600px; margin: auto; padding-bottom: 350px; }
+        .card { background: var(--white); border-radius: 12px; padding: 15px; margin-bottom: 12px; border-left: 5px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        .ctrls { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px solid #eee; padding-top: 10px; }
+        .qty-box { display: flex; align-items: center; gap: 10px; background: #f4f4f4; border-radius: 8px; padding: 5px 10px; }
+        .q-btn { border: none; background: #ddd; width: 35px; height: 35px; border-radius: 50%; font-weight: bold; cursor: pointer; font-size: 1.2rem; }
+        
+        .btn { background: var(--whatsapp); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 1rem; }
+        .btn-add { width: auto; padding: 8px 15px; background: var(--primary); }
+
+        #cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); padding: 15px; border-top: 1px solid #ddd; z-index: 2000; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
+        .cart-list { max-height: 100px; overflow-y: auto; font-size: 0.85rem; margin-bottom: 10px; border-bottom: 1px solid #eee; }
+        .row { display: flex; justify-content: space-between; padding: 5px 0; }
+        
+        .toggles { display: flex; gap: 8px; margin-bottom: 10px; }
+        .t-btn { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; background: #f9f9f9; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+        .t-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .overlay { position: fixed; inset: 0; background: var(--white); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="login-screen" class="overlay">
+    <h1 style="color:var(--primary)">फरहीन किराणा & जनरल स्टोअर, घारोळा</h1>
+    <p>Fresh Quality, Every Day</p>
+    <input type="tel" id="u-phone" placeholder="Enter Mobile Number">
+    <button class="btn" onclick="login()">Enter Market</button>
+</div>
+
+<header>
+    <h3>फरहीन किराणा & जनरल स्टोअर, घारोळा</h3>
+    <div class="sub-head">आजचा भाव फलक</div>
+    <div style="position:absolute; right:15px; top:24px; cursor:pointer; font-size: 1.3rem;" onclick="showV()">⚙️</div>
+</header>
+
+<div class="container" id="p-list"></div>
+
+<div id="cart-bar" style="display:none">
+    <div id="cart-items" class="cart-list"></div>
+    
+    <div class="toggles">
+        <button id="s-pick" class="t-btn active" onclick="setSvc('Pick')">Store Pickup</button>
+        <button id="s-del" class="t-btn" onclick="setSvc('Del')">Delivery (+₹50)</button>
+    </div>
+
+    <div id="box-pick">
+        <select id="p-loc">
+            <option value="">Choose Pickup Counter</option>
+            <option>फरहीन किराणा & जनरल स्टोअर, घारोळा</option>
+        </select>
+    </div>
+    <div id="box-del" class="hidden">
+        <textarea id="d-addr" placeholder="House No, Landmark, Area..." rows="2"></textarea>
+    </div>
+
+    <div class="row" style="font-weight:bold; font-size:1.2rem; border-top:1px solid #eee; padding:10px 0; color: var(--primary);">
+        <span>Total Payable:</span><span id="c-total">₹0</span>
+    </div>
+
+    <button class="btn" onclick="checkout()">Confirm Order (WhatsApp)</button>
+    <div style="text-align: center; font-size: 0.7rem; color: #888; margin-top: 6px;">Payment Mode: Cash on Arrival</div>
+</div>
+
+<div id="vendor-screen" class="overlay" style="display:none; overflow-y:auto; justify-content: flex-start; padding-top:60px;">
+    <h2 style="color: var(--primary)">Admin Dashboard</h2>
+    <div id="v-list" style="width:100%; max-width: 400px;"></div>
+    <button class="btn" style="background:var(--blue)" onclick="addVItem()">+ Add Product</button>
+    <button class="btn" onclick="saveV()" style="margin-top:10px">Save Changes</button>
+    <button onclick="hideV()" style="background:none; border:none; margin-top:15px; color:#666">Back to Shop</button>
+</div>
+
+<script>
+    const CONFIG = {
+        whatsapp: "919822865927", 
+        deliveryFee: 50,
+        adminCode: "NzQ2MjY2"
+    };
+
+    let inv = [
+        { id: 1, name: "Watermelon", price: 7.5, unit: 'wt', step: 250 },
+        { id: 2, name: "Bananas", price: 60, unit: 'ct', step: 1, label: 'dozen' },
+        { id: 3, name: "Pineapple", price: 100, unit: 'ct', step: 1, label: 'pcs' },
+    ];
+
+    let cart = {};
+    let mode = 'Pick';
+
+    window.onload = () => {
+        const saved = localStorage.getItem('arif_master_inv_v2');
+        if(saved) inv = JSON.parse(saved);
+        if(localStorage.getItem('cust_phone')) document.getElementById('login-screen').style.display='none';
+        render();
+    };
+
+    function formatQty(val, item) {
+        if (item.unit === 'wt') {
+            return val >= 1000 ? (val/1000).toFixed(2) + ' kg' : val + ' gm';
+        }
+        return val + ' ' + (item.label || 'pcs');
+    }
+
+    function render() {
+        const div = document.getElementById('p-list');
+        div.innerHTML = inv.map(p => `
+            <div class="card">
+                <div style="font-weight:bold; font-size:1.1rem;">${p.name}</div>
+                <div style="color:#666; font-size:0.9rem;">₹${p.price} / ${p.unit === 'wt' ? '250g' : p.label}</div>
+                <div class="ctrls">
+                    <div class="qty-box">
+                        <button class="q-btn" onclick="updQty(${p.id}, -${p.step})">-</button>
+                        <span id="qty-${p.id}" data-raw="${p.step}" style="font-weight:bold; width:85px; text-align:center;">
+                            ${formatQty(p.step, p)}
+                        </span>
+                        <button class="q-btn" onclick="updQty(${p.id}, ${p.step})">+</button>
+                    </div>
+                    <button class="btn btn-add" onclick="addToCart(${p.id})">Add</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function updQty(id, delta) {
+        const p = inv.find(x => x.id === id);
+        const el = document.getElementById(`qty-${id}`);
+        let current = parseInt(el.getAttribute('data-raw'));
+        let newVal = Math.max(p.step, current + delta);
+        el.setAttribute('data-raw', newVal);
+        el.innerText = formatQty(newVal, p);
+    }
+
+    function addToCart(id) {
+        const p = inv.find(x => x.id === id);
+        const qty = parseInt(document.getElementById(`qty-${id}`).getAttribute('data-raw'));
+        if(cart[id]) cart[id].q += qty; else cart[id] = { ...p, q: qty };
+        updateCart();
+    }
+
+    function updateCart() {
+        let itemsTotal = 0; let html = '';
+        for(let id in cart) {
+            const item = cart[id];
+            let cost = item.unit === 'wt' ? (item.price * (item.q / 250)) : (item.price * item.q);
+            itemsTotal += cost;
+            html += `<div class="row">
+                <span>${item.name} (${formatQty(item.q, item)})</span>
+                <span>₹${cost.toFixed(2)} <b onclick="del(${id})" style="color:red; cursor:pointer; margin-left:8px;">✕</b></span>
+            </div>`;
+        }
+        let final = itemsTotal + (mode === 'Del' ? CONFIG.deliveryFee : 0);
+        document.getElementById('c-total').innerText = '₹' + final.toFixed(2);
+        document.getElementById('cart-items').innerHTML = html;
+        document.getElementById('cart-bar').style.display = itemsTotal > 0 ? 'block' : 'none';
+    }
+
+    function del(id) { delete cart[id]; updateCart(); }
+
+    function setSvc(s) {
+        mode = s;
+        document.getElementById('s-pick').className = s==='Pick' ? 't-btn active' : 't-btn';
+        document.getElementById('s-del').className = s==='Del' ? 't-btn active' : 't-btn';
+        document.getElementById('box-pick').classList.toggle('hidden', s!=='Pick');
+        document.getElementById('box-del').classList.toggle('hidden', s!=='Del');
+        updateCart();
+    }
+
+    function checkout() {
+        const loc = mode === 'Pick' ? document.getElementById('p-loc').value : document.getElementById('d-addr').value;
+        if(!loc || loc.trim() === "") return alert("Please provide Pickup Point or Delivery Address");
+
+        let total = document.getElementById('c-total').innerText.replace('₹','');
+        let msg = `*NEW ORDER CONFIRMATION - फरहीन किराणा & जनरल स्टोअर, घारोळा*%0A`;
+        msg += `Status: CASH / COD%0A`;
+        msg += `Type: ${mode === 'Pick' ? 'Pickup' : 'Home Delivery'}%0A`;
+        msg += `Location: ${loc}%0A%0A`;
+        msg += `*Items:*%0A`;
+        for(let id in cart) {
+            msg += `- ${cart[id].name} (${formatQty(cart[id].q, cart[id])})%0A`;
+        }
+        msg += `%0A*FINAL PAYABLE: ₹${total}*%0A_I will pay cash on arrival._`;
+        
+        window.open(`https://wa.me/${CONFIG.whatsapp}?text=${msg}`);
+        cart = {}; updateCart();
+    }
+
+    function login() {
+        if(document.getElementById('u-phone').value.length >= 10) {
+            localStorage.setItem('cust_phone', 'yes');
+            document.getElementById('login-screen').style.display='none';
+        } else { alert("Enter valid mobile number"); }
+    }
+
+    function showV() { if(btoa(prompt("Admin Access:")) === CONFIG.adminCode) { document.getElementById('vendor-screen').style.display='flex'; renderV(); } }
+    function hideV() { document.getElementById('vendor-screen').style.display='none'; }
+    function renderV() {
+        document.getElementById('v-list').innerHTML = inv.map((p,i) => `
+            <div style="background:#f0f0f0; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #ccc; text-align: left;">
+                <label style="font-size: 0.7rem; font-weight: bold;">Product Name</label>
+                <input type="text" value="${p.name}" onchange="inv[${i}].name=this.value">
+                <div style="display:flex; gap:5px;">
+                    <div style="flex:1">
+                        <label style="font-size: 0.7rem; font-weight: bold;">Price</label>
+                        <input type="number" value="${p.price}" onchange="inv[${i}].price=this.value">
+                    </div>
+                    <div style="flex:1">
+                        <label style="font-size: 0.7rem; font-weight: bold;">Unit Type</label>
+                        <select onchange="inv[${i}].unit=this.value; renderV();">
+                            <option value="wt" ${p.unit==='wt'?'selected':''}>Weight</option>
+                            <option value="ct" ${p.unit==='ct'?'selected':''}>Count</option>
+                        </select>
+                    </div>
+                </div>
+                ${p.unit==='ct' ? `<label style="font-size: 0.7rem; font-weight: bold;">Label (dozen/pcs)</label><input type="text" value="${p.label}" onchange="inv[${i}].label=this.value">` : ''}
+                <button onclick="inv.splice(${i},1); renderV();" style="background:var(--red); color:white; border:none; padding:8px; border-radius:5px; width:100%; margin-top:5px; font-weight: bold;">Remove</button>
+            </div>
+        `).join('');
+    }
+    function addVItem() { inv.push({id:Date.now(), name:"New Item", price:0, unit:'wt', step:250}); renderV(); }
+    function saveV() { localStorage.setItem('arif_master_inv_v2', JSON.stringify(inv)); location.reload(); }
+</script>
+</body>
+</html>
